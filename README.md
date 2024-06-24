@@ -8,7 +8,6 @@ A real-time application for detecting and recognizing sign language gestures usi
 - [Installation](#installation)
 - [Usage](#usage)
 - [Libraries Used](#libraries-used)
-- [License](#license)
 - [Contact](#contact)
 
 ## Overview
@@ -57,9 +56,6 @@ This project leverages Flask for the web interface and TensorFlow/Keras for the 
 - **Splitfolders**: Dataset splitting
 - **Logging**: Logging messages
 
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Contact
 For questions or suggestions, please open an issue or contact me at [riaansadiqa23@gmail.com].
