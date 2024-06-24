@@ -19,7 +19,40 @@ def extract_features(image):
 
 camera = cv2.VideoCapture(0)
 
-
+def gen_frames():
+    while True:
+        success, frame = camera.read()
+        if not success:
+            app.logger.error("Failed to read frame from camera")
+            break
+        else:
+            app.logger.info("Frame captured")
+           
+            cv2.rectangle(frame, (0, 40), (300, 300), (0, 165, 255), 1)
+            crop_frame = frame[40:300, 0:300]
+            crop_frame_gray = cv2.cvtColor(crop_frame, cv2.COLOR_BGR2GRAY)
+            crop_frame_resized = cv2.resize(crop_frame_gray, (50, 50))
+            crop_frame_normalized = extract_features(crop_frame_resized)
+            
+            # Prediction
+            pred = model.predict(crop_frame_normalized)
+            prediction_label = label[pred.argmax()]
+            
+            # Display prediction
+            cv2.rectangle(frame, (0, 0), (300, 40), (0, 165, 255), -1)
+            if prediction_label == 'blank':
+                cv2.putText(frame, " ", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            else:
+                accu = "{:.2f}".format(np.max(pred) * 100)
+                cv2.putText(frame, f'{prediction_label}  {accu}%', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            
+            ret, buffer = cv2.imencode('.jpg', frame)
+            if not ret:
+                app.logger.error("Failed to encode frame")
+                continue
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 @app.route('/')
 def index():
@@ -27,8 +60,7 @@ def index():
 
 @app.route('/video_feed')
 def video_feed():
-    
-    pass
+    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
